@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mobile Service Manager</title>
+  <style>
+:root {
+  /* Primitive Color Tokens */
+  --color-white: rgba(255, 255, 255, 1);
+  --color-black: rgba(0, 0, 0, 1);
+  --color-cream-50: rgba(252, 252, 249, 1);
+  --color-cream-100: rgba(255, 255, 253, 1);
+  --color-gray-200: rgba(245, 245, 245, 1);
+  --color-gray-300: rgba(167, 169, 169, 1);
+  --color-gray-400: rgba(119, 124, 124, 1);
+  --color-slate-500: rgba(98, 108, 113, 1);
+  --color-brown-600: rgba(94, 82, 64, 1);
+  --color-charcoal-700: rgba(31, 33, 33, 1);
+  --color-charcoal-800: rgba(38, 40, 40, 1);
+  --color-slate-900: rgba(19, 52, 59, 1);
+  --color-teal-300: rgba(50, 184, 198, 1);
+  --color-teal-400: rgba(45, 166, 178, 1);
+  --color-teal-500: rgba(33, 128, 141, 1);
+  --color-teal-600: rgba(29, 116, 128, 1);
+  --color-teal-700: rgba(26, 104, 115, 1);
+  --color-teal-800: rgba(41, 150, 161, 1);
+  --color-red-400: rgba(255, 84, 89, 1);
+  --color-red-500: rgba(192, 21, 47, 1);
+  --color-orange-400: rgba(230, 129, 97, 1);
+  --color-orange-500: rgba(168, 75, 47, 1);
+
+  /* RGB versions for opacity control */
+  --color-brown-600-rgb: 94, 82, 64;
+  --color-teal-500-rgb: 33, 128, 141;
+  --color-slate-900-rgb: 19, 52, 59;
+  --color-slate-500-rgb: 98, 108, 113;
+  --color-red-500-rgb: 192, 21, 47;
+  --color-red-400-rgb: 255, 84, 89;
+  --color-orange-500-rgb: 168, 75, 47;
+  --color-orange-400-rgb: 230, 129, 97;
+
+  /* Background color tokens (Light Mode) */
+  --color-bg-1: rgba(59, 130, 246, 0.08);
+  --color-bg-2: rgba(245, 158, 11, 0.08);
+  --color-bg-3: rgba(34, 197, 94, 0.08);
+  --color-bg-4: rgba(239, 68, 68, 0.08);
+  --color-bg-5: rgba(147, 51, 234, 0.08);
+  --color-bg-6: rgba(249, 115, 22, 0.08);
+  --color-bg-7: rgba(236, 72, 153, 0.08);
+  --color-bg-8: rgba(6, 182, 212, 0.08);
+
+  /* Semantic Color Tokens (Light Mode) */
+  --color-background: var(--color-cream-50);
+  --color-surface: var(--color-cream-100);
+  --color-text: var(--color-slate-900);
+  --color-text-secondary: var(--color-slate-500);
+  --color-primary: var(--color-teal-500);
+  --color-primary-hover: var(--color-teal-600);
+  --color-primary-active: var(--color-teal-700);
+  --color-secondary: rgba(var(--color-brown-600-rgb), 0.12);
+  --color-secondary-hover: rgba(var(--color-brown-600-rgb), 0.2);
+  --color-secondary-active: rgba(var(--color-brown-600-rgb), 0.25);
+  --color-border: rgba(var(--color-brown-600-rgb), 0.2);
+  --color-btn-primary-text: var(--color-cream-50);
+  --color-card-border: rgba(var(--color-brown-600-rgb), 0.12);
+  --color-card-border-inner: rgba(var(--color-brown-600-rgb), 0.12);
+  --color-error: var(--color-red-500);
+  --color-success: var(--color-teal-500);
+  --color-warning: var(--color-orange-500);
+  --color-info: var(--color-slate-500);
+  --color-focus-ring: rgba(var(--color-teal-500-rgb), 0.4);
+  --color-select-caret: rgba(var(--color-slate-900-rgb), 0.8);
+
+  /* Typography */
+  --font-family-base: "FKGroteskNeue", "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-family-mono: "Berkeley Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-size-xs: 11px;
+  --font-size-sm: 12px;
+  --font-size-base: 14px;
+  --font-size-md: 14px;
+  --font-size-lg: 16px;
+  --font-size-xl: 18px;
+  --font-size-2xl: 20px;
+  --font-size-3xl: 24px;
+  --font-size-4xl: 30px;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 550;
+  --font-weight-bold: 600;
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+  --letter-spacing-tight: -0.01em;
+
+  /* Spacing */
+  --space-0: 0;
+  --space-1: 1px;
+  --space-2: 2px;
+  --space-4: 4px;
+  --space-6: 6px;
+  --space-8: 8px;
+  --space-10: 10px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-20: 20px;
+  --space-24: 24px;
+  --space-32: 32px;
+
+  /* Border Radius */
+  --radius-sm: 6px;
+  --radius-base: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.02);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+  --shadow-inset-sm: inset 0 1px 0 rgba(255, 255, 255, 0.15), inset 0 -1px 0 rgba(0, 0, 0, 0.03);
+
+  /* Animation */
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Layout */
+  --container-sm: 640px;
+  --container-md: 768px;
+  --container-lg: 1024px;
+  --container-xl: 1280px;
+}
+
+@font-face {
+  font-family: 'FKGroteskNeue';
+  src: url('https://r2cdn.perplexity.ai/fonts/FKGroteskNeue.woff2') format('woff2');
+}
+  </style>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>📱 Mobile Service Manager</h1>
+      <p class="subtitle">Service Intake, Billing &amp; Record Management System</p>
+    </header>
+
+    <nav class="nav-tabs">
+      <button id="newServiceBtn" class="tab-btn active">📋 New Service</button>
+      <button id="vendorsBtn" class="tab-btn">🏢 Vendors</button>
+      <button id="laptopServiceBtn" class="tab-btn">💻 Laptop Service</button>
+      <button id="billingBtn" class="tab-btn">💰 Billing</button>
+      <button id="recordsBtn" class="tab-btn">📊 All Records</button>
+    </nav>
+
+    <!-- NEW SERVICE SECTION -->
+    <section id="newServiceSection" class="tab-content active">
+      <h2>Mobile Service Intake Form</h2>
+      <form id="serviceForm">
+        <!-- Basic Info -->
+        <div class="form-section section">
+          <h3 class="section-header">📋 Basic Information</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="serviceDate">Date <span class="required">*</span></label>
+              <input type="date" id="serviceDate" name="serviceDate" class="form-control" required />
+              <span class="error-msg" id="serviceDateError"></span>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="customerName">Customer Name <span class="required">*</span></label>
+              <input type="text" id="customerName" name="customerName" class="form-control" required />
+              <span class="error-msg" id="customerNameError"></span>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="mobileNumber">Mobile Number <span class="required">*</span></label>
+              <input type="tel" id="mobileNumber" name="mobileNumber" class="form-control" pattern="\d{10}" maxlength="10" placeholder="10-digit number" required />
+              <span class="error-msg" id="mobileNumberError"></span>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group full-width">
+              <label class="form-label" for="address">Address</label>
+              <textarea id="address" name="address" class="form-control" rows="2"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Device Info -->
+        <div class="form-section section">
+          <h3 class="section-header">📱 Device Information</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="mobileBrand">Mobile Brand <span class="required">*</span></label>
+              <input type="text" id="mobileBrand" name="mobileBrand" class="form-control" list="brandsList" required />
+              <datalist id="brandsList">
+                <option value="Samsung">
+                <option value="Apple">
+                <option value="Vivo">
+                <option value="Oppo">
+                <option value="Realme">
+                <option value="Redmi">
+                <option value="OnePlus">
+                <option value="Motorola">
+                <option value="Nokia">
+                <option value="Poco">
+                <option value="Lava">
+                <option value="Infinix">
+                <option value="Xiaomi">
+                <option value="Google Pixel">
+                <option value="Nothing">
+                <option value="Tecno">
+                <option value="Itel">
+                <option value="Honor">
+                <option value="iQOO">
+                <option value="Asus">
+              </datalist>
+              <span class="error-msg" id="mobileBrandError"></span>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="model">Model <span class="required">*</span></label>
+              <input type="text" id="model" name="model" class="form-control" required />
+              <span class="error-msg" id="modelError"></span>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="imei1">IMEI No. 1 <span class="required">*</span></label>
+              <input type="text" id="imei1" name="imei1" class="form-control" pattern="\d{15}" maxlength="15" placeholder="15-digit IMEI" required />
+              <span class="error-msg" id="imei1Error"></span>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="imei2">IMEI No. 2 (if dual SIM)</label>
+              <input type="text" id="imei2" name="imei2" class="form-control" pattern="\d{15}" maxlength="15" placeholder="15-digit IMEI" />
+              <span class="error-msg" id="imei2Error"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Service Details -->
+        <div class="form-section section">
+          <h3 class="section-header">🔧 Service Details</h3>
+          <div class="form-row">
+            <div class="form-group full-width">
+              <label class="form-label" for="issue">Issue Description <span class="required">*</span></label>
+              <textarea id="issue" name="issue" class="form-control" rows="3" required></textarea>
+              <span class="error-msg" id="issueError"></span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <fieldset class="form-group full-width">
+              <legend>Service Type <span class="required">*</span></legend>
+              <div class="checkbox-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" name="serviceType" value="Display" /> Display
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" name="serviceType" value="Battery" /> Battery
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" name="serviceType" value="Charger" /> Charger
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" name="serviceType" value="Motherboard" /> Motherboard
+                </label>
+              </div>
+              <div style="margin-top: 10px;">
+                <input type="text" id="otherType" name="otherType" class="form-control" placeholder="Enter other service type..." />
+              </div>
+            </fieldset>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="mobileCondition">Mobile Condition <span class="required">*</span></label>
+              <select id="mobileCondition" name="mobileCondition" class="form-control" required>
+                <option value="">-- Select --</option>
+                <option value="ON">ON (Working)</option>
+                <option value="Good">Good (Minor damage)</option>
+                <option value="Water Lock">Water Lock</option>
+                <option value="Damaged">Damaged (Major issues)</option>
+              </select>
+              <span class="error-msg" id="mobileConditionError"></span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <fieldset class="form-group full-width">
+              <legend>Accessories Received</legend>
+              <div class="checkbox-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" name="accessories" value="SIM Tray" /> SIM Tray
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" name="accessories" value="SIM" /> SIM
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" name="accessories" value="Back Cover" /> Back Cover
+                </label>
+              </div>
+            </fieldset>
+          </div>
+        </div>
+
+        <!-- Images -->
+        <div class="form-section section">
+          <h3 class="section-header">📸 Device Images</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="frontImage">Front Image</label>
+              <input type="file" id="frontImage" name="frontImage" class="form-control" accept="image/*" />
+              <div id="frontImagePreview" class="image-preview"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="backImage">Back Image</label>
+              <input type="file" id="backImage" name="backImage" class="form-control" accept="image/*" />
+              <div id="backImagePreview" class="image-preview"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Service Management -->
+        <div class="form-section section">
+          <h3 class="section-header">⚙️ Service Management</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="receivedBy">Received By <span class="required">*</span></label>
+              <select id="receivedBy" name="receivedBy" class="form-control" required>
+                <option value="">-- Select --</option>
+                <option value="Avinash">Avinash</option>
+                <option value="Aryan">Aryan</option>
+                <option value="Sameer">Sameer</option>
+              </select>
+              <span class="error-msg" id="receivedByError"></span>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="estimatedDelivery">Estimated Delivery <span class="required">*</span></label>
+              <input type="date" id="estimatedDelivery" name="estimatedDelivery" class="form-control" required />
+              <span class="error-msg" id="estimatedDeliveryError"></span>
+            </div>
+          </div>
+
+
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button type="submit" class="btn btn--primary">✓ Submit Service Request</button>
+          <button type="button" id="clearFormBtn" class="btn btn--secondary">⟲ Clear Form</button>
+        </div>
+      </form>
+
+      <!-- Recent Services -->
+      <div class="records-section">
+        <h3>📝 Recent Services</h3>
+        <input type="search" id="serviceSearch" class="search-box" placeholder="🔍 Search by Service ID or Mobile Number..." />
+        <div id="recentServicesContainer">
+          <ul id="recentServices" class="records-list"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- BILLING SECTION -->
+    <section id="billingSection" class="tab-content">
+      <h2>💰 Billing &amp; Invoice</h2>
+      
+      <div class="search-section">
+        <h3>Search Service Record</h3>
+        <div class="search-form">
+          <input type="search" id="searchBillInput" class="search-box" placeholder="🔍 Enter Service ID or Mobile Number..." />
+          <button id="searchBillBtn" class="btn btn-primary">Search</button>
+        </div>
+      </div>
+
+      <!-- Bill Display Area -->
+      <div id="billDisplayArea"></div>
+
+      <!-- Recent Bills -->
+      <div class="records-section">
+        <h3>📋 Recent Bills</h3>
+        <div id="recentBillsContainer">
+          <ul id="recentBills" class="records-list"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ALL RECORDS SECTION -->
+    <section id="recordsSection" class="tab-content">
+      <h2>📊 All Service Records</h2>
+      
+      <!-- Date Range Filter (NEW) -->
+      <div class="date-filter-section">
+        <h3>📅 Filter by Date Range:</h3>
+        <div class="date-inputs">
+          <label>From:</label>
+          <input type="date" id="filterFromDate" data-no-autofill="true" class="filter-date no-autofill" placeholder="">
+          <span>to</span>
+          <label>To:</label>
+          <input type="date" id="filterToDate" data-no-autofill="true" class="filter-date no-autofill" placeholder="">
+          <button class="btn btn--secondary" onclick="filterByDateRange()">Apply Filter</button>
+          <button class="btn btn--secondary" onclick="resetDateFilter()">All Records</button>
+        </div>
+      </div>
+      
+      <div class="search-section">
+        <input type="search" id="allRecordsSearch" class="search-box" placeholder="🔍 Search by Service ID, Customer Name, or Mobile..." />
+      </div>
+      
+      <!-- Summary (Dynamic) -->
+      <div class="summary-section">
+        <p id="recordsSummary"></p>
+      </div>
+      
+      <div class="records-filter" style="margin-bottom: var(--space-16);">
+        <label style="margin-right: var(--space-16);">Filter:</label>
+        <label class="checkbox-label">
+          <input type="radio" name="recordFilter" value="all" checked> All Records
+        </label>
+        <label class="checkbox-label">
+          <input type="radio" name="recordFilter" value="individual"> Mobile Only
+        </label>
+        <label class="checkbox-label">
+          <input type="radio" name="recordFilter" value="laptop"> Laptop Only
+        </label>
+        <label class="checkbox-label">
+          <input type="radio" name="recordFilter" value="vendor"> Vendors Only
+        </label>
+      </div>
+      
+      <div id="allRecordsContainer">
+        <ul id="allRecordsList" class="records-list full-list"></ul>
+      </div>
+    </section>
+
+    <!-- LAPTOP SERVICE SECTION -->
+    <section id="laptopServiceSection" class="tab-content">
+      <h2>💻 Laptop Service Management</h2>
+      
+      <form id="laptopServiceForm">
+        <div class="form-section section">
+          <h3 class="section-header">📋 Service Information</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="laptopServiceId">Laptop Service ID</label>
+              <input type="text" id="laptopServiceId" name="laptopServiceId" class="form-control" readonly />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="laptopDate">Date <span class="required">*</span></label>
+              <input type="date" id="laptopDate" name="laptopDate" class="form-control" required />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="laptopContact">Contact Number <span class="required">*</span></label>
+              <input type="tel" id="laptopContact" name="laptopContact" class="form-control" pattern="\d{10}" maxlength="10" placeholder="10-digit mobile number" required />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section section">
+          <h3 class="section-header">💻 Laptop Information</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="laptopBrand">Laptop Brand <span class="required">*</span></label>
+              <input type="text" id="laptopBrand" name="laptopBrand" class="form-control" list="laptopBrandsList" required />
+              <datalist id="laptopBrandsList">
+                <option value="HP">
+                <option value="Dell">
+                <option value="Lenovo">
+                <option value="Asus">
+                <option value="Acer">
+                <option value="Apple">
+                <option value="MSI">
+                <option value="Samsung">
+                <option value="Microsoft">
+                <option value="LG">
+                <option value="Huawei">
+              </datalist>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="laptopModel">Model <span class="required">*</span></label>
+              <input type="text" id="laptopModel" name="laptopModel" class="form-control" placeholder="e.g., EliteBook 840 G8" required />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="laptopCondition">Condition <span class="required">*</span></label>
+              <select id="laptopCondition" name="laptopCondition" class="form-control" required>
+                <option value="">-- Select Condition --</option>
+                <option value="ON">ON</option>
+                <option value="OFF">OFF</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Accessories Received</label>
+              <div class="checkbox-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" name="laptopAccessories" value="Charger" /> Charger
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" name="laptopAccessories" value="Box" /> Box
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section section">
+          <h3 class="section-header">🔧 Service Details</h3>
+          <div class="form-row">
+            <div class="form-group full-width">
+              <label class="form-label" for="laptopIssue">Issue Description <span class="required">*</span></label>
+              <textarea id="laptopIssue" name="laptopIssue" class="form-control" rows="4" placeholder="Describe the laptop issue..." required></textarea>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="laptopReceivedBy">Received By <span class="required">*</span></label>
+              <input type="text" id="laptopReceivedBy" name="laptopReceivedBy" class="form-control" list="staffList" placeholder="Select or type name" required />
+              <datalist id="staffList">
+                <option value="Avinash">
+                <option value="Aryan">
+                <option value="Sameer">
+              </datalist>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn--primary">✓ Submit Laptop Service</button>
+          <button type="button" id="clearLaptopFormBtn" class="btn btn--secondary">⟲ Clear Form</button>
+        </div>
+      </form>
+
+      <!-- Recent Laptop Services -->
+      <div class="records-section">
+        <h3>📝 Recent Laptop Services</h3>
+        <input type="search" id="laptopSearch" class="search-box" placeholder="🔍 Search by Laptop ID or Contact Number..." />
+        <div id="recentLaptopsContainer">
+          <ul id="recentLaptops" class="records-list"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- VENDORS SECTION -->
+    <section id="vendorsSection" class="tab-content">
+      <h2>🏢 Vendor Service Management</h2>
+      
+      <!-- CREATE NEW VENDOR SECTION -->
+      <div class="create-vendor-section">
+        <h3>Create New Vendor</h3>
+        <form id="createVendorForm">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="newVendorName">Vendor Name <span class="required">*</span></label>
+              <input type="text" id="newVendorName" name="newVendorName" class="form-control" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="newVendorMobile">Mobile Number <span class="required">*</span></label>
+              <input type="tel" id="newVendorMobile" name="newVendorMobile" class="form-control" pattern="\d{10}" maxlength="10" placeholder="10-digit number" required />
+            </div>
+          </div>
+          <button type="submit" class="btn btn--primary">Create Vendor</button>
+        </form>
+      </div>
+
+      <!-- ADD PHONE TO VENDOR SECTION -->
+      <div class="add-phone-section">
+        <h3>Add Phone to Vendor</h3>
+        <form id="addPhoneForm">
+          <div class="form-row">
+            <div class="form-group full-width">
+              <label class="form-label" for="selectVendor">Select Vendor <span class="required">*</span></label>
+              <select id="selectVendor" name="selectVendor" class="form-control" required>
+                <option value="">-- Select Vendor --</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="phoneDate">Date Received <span class="required">*</span></label>
+              <input type="date" id="phoneDate" name="phoneDate" class="form-control" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="phoneBrand">Mobile Brand <span class="required">*</span></label>
+              <input type="text" id="phoneBrand" name="phoneBrand" class="form-control" list="brandsList" required />
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="phoneModel">Model <span class="required">*</span></label>
+              <input type="text" id="phoneModel" name="phoneModel" class="form-control" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="phoneReceivedBy">Received By <span class="required">*</span></label>
+              <select id="phoneReceivedBy" name="phoneReceivedBy" class="form-control" required>
+                <option value="">-- Select --</option>
+                <option value="Avinash">Avinash</option>
+                <option value="Aryan">Aryan</option>
+                <option value="Sameer">Sameer</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group full-width">
+              <label class="form-label" for="phoneIssue">Issue Description <span class="required">*</span></label>
+              <textarea id="phoneIssue" name="phoneIssue" class="form-control" rows="3" required></textarea>
+            </div>
+          </div>
+          
+          <button type="submit" class="btn btn--primary">Add Phone</button>
+        </form>
+      </div>
+
+      <!-- Recent Vendors -->
+      <div class="records-section">
+        <h3>📝 Recent Vendors</h3>
+        <input type="search" id="vendorSearch" class="search-box" placeholder="🔍 Search by Vendor ID, Name, or Mobile Number..." />
+        <div id="recentVendorsContainer">
+          <ul id="recentVendors" class="records-list"></ul>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
