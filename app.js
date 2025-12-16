@@ -1220,11 +1220,16 @@ function displayBillingForm(record) {
   const billHTML = `
     <div class="bill-container">
       <div class="bill-business-header">
-        <div class="business-name">MYLAVAN MOBILE SERVICE</div>
-        <div class="business-info">
-          Shop no. 23, New municipality complex<br>
-          old bus stand, Vellore 632004<br>
-          Contact: +91-7339559582
+        <div style="display: flex; align-items: center; gap: var(--space-12); margin-bottom: var(--space-8);">
+          <img src="logo.png" alt="MYLAVAN Logo" style="height: 50px; width: 50px; border-radius: var(--radius-8);" />
+          <div>
+            <div class="business-name">MYLAVAN MOBILE SERVICE</div>
+            <div class="business-info">
+              Shop no. 23, New municipality complex<br>
+              old bus stand, Vellore 632004<br>
+              Contact: +91-7339559582
+            </div>
+          </div>
         </div>
       </div>
       <div class="bill-header">BILL</div>
@@ -1321,8 +1326,8 @@ function displayBillingForm(record) {
 
       <div class="bill-actions">
         <button class="btn btn-success" onclick="saveBill('${record.service_id}')">✓ Save Bill</button>
-        <button class="btn btn-primary" onclick="printBill()">🖨 Print Bill</button>
-        <button class="btn btn-secondary" onclick="generatePDF('${record.service_id}')">📄 Export PDF</button>
+        <button class="btn btn-primary" onclick="printBill()" style="display: none;" id="printBillBtn">🖨 Print Bill</button>
+        <button class="btn btn-secondary" onclick="generatePDF('${record.service_id}')" style="display: none;" id="exportPdfBtn">📄 Export PDF</button>
       </div>
       
       <script>
@@ -1454,6 +1459,13 @@ function saveBill(serviceId) {
 
   saveRecords(records);
   alert('✓ Bill saved successfully!');
+  
+  // Show Print Bill and Export PDF buttons after successful save
+  const printBtn = document.getElementById('printBillBtn');
+  const exportBtn = document.getElementById('exportPdfBtn');
+  if (printBtn) printBtn.style.display = 'inline-block';
+  if (exportBtn) exportBtn.style.display = 'inline-block';
+  
   renderRecentBills('');
   displayBill(records[recordIndex]);
 }
@@ -1473,11 +1485,16 @@ function displayVendorBill(vendor) {
   let billHTML = `
     <div class="bill-container">
       <div class="bill-business-header">
-        <div class="business-name">MYLAVAN MOBILE SERVICE</div>
-        <div class="business-info">
-          Shop no. 23, New municipality complex<br>
-          old bus stand, Vellore 632004<br>
-          Contact: +91-7339559582
+        <div style="display: flex; align-items: center; gap: var(--space-12); margin-bottom: var(--space-8);">
+          <img src="logo.png" alt="MYLAVAN Logo" style="height: 50px; width: 50px; border-radius: var(--radius-8);" />
+          <div>
+            <div class="business-name">MYLAVAN MOBILE SERVICE</div>
+            <div class="business-info">
+              Shop no. 23, New municipality complex<br>
+              old bus stand, Vellore 632004<br>
+              Contact: +91-7339559582
+            </div>
+          </div>
         </div>
       </div>
       <div class="bill-header">VENDOR SERVICE BILL</div>
@@ -1540,7 +1557,6 @@ function displayVendorBill(vendor) {
           </div>
         </div>
         <div class="bill-footer-right">
-          <div style="font-weight: bold; margin-bottom: var(--space-32);">Authorized Signature</div>
           <div class="signature-container">
             <div style="height: 60px; margin-bottom: var(--space-8); border-bottom: 1px solid var(--color-border);"></div>
             <div class="signature-line">Authorized Signatory</div>
@@ -1567,11 +1583,16 @@ function displayBill(record) {
   let billHTML = `
     <div class="bill-container">
       <div class="bill-business-header">
-        <div class="business-name">MYLAVAN MOBILE SERVICE</div>
-        <div class="business-info">
-          Shop no. 23, New municipality complex<br>
-          old bus stand, Vellore 632004<br>
-          Contact: +91-7339559582
+        <div style="display: flex; align-items: center; gap: var(--space-12); margin-bottom: var(--space-8);">
+          <img src="logo.png" alt="MYLAVAN Logo" style="height: 50px; width: 50px; border-radius: var(--radius-8);" />
+          <div>
+            <div class="business-name">MYLAVAN MOBILE SERVICE</div>
+            <div class="business-info">
+              Shop no. 23, New municipality complex<br>
+              old bus stand, Vellore 632004<br>
+              Contact: +91-7339559582
+            </div>
+          </div>
         </div>
       </div>
       <div class="bill-header">BILL</div>
@@ -1642,7 +1663,6 @@ function displayBill(record) {
           </div>
         </div>
         <div class="bill-footer-right">
-          <div style="font-weight: bold; margin-bottom: var(--space-32);">Authorized Signature</div>
           <div class="signature-container">
             <div style="height: 60px; margin-bottom: var(--space-8); border-bottom: 1px solid var(--color-border);"></div>
             <div class="signature-line">Authorized Signatory</div>
@@ -2861,11 +2881,16 @@ function displayLaptopBillingForm(laptop) {
   const billHTML = `
     <div class="bill-container">
       <div class="bill-business-header">
-        <div class="business-name">MYLAVAN MOBILE SERVICE</div>
-        <div class="business-info">
-          Shop no. 23, New municipality complex<br>
-          old bus stand, Vellore 632004<br>
-          Contact: +91-7339559582
+        <div style="display: flex; align-items: center; gap: var(--space-12); margin-bottom: var(--space-8);">
+          <img src="logo.png" alt="MYLAVAN Logo" style="height: 50px; width: 50px; border-radius: var(--radius-8);" />
+          <div>
+            <div class="business-name">MYLAVAN MOBILE SERVICE</div>
+            <div class="business-info">
+              Shop no. 23, New municipality complex<br>
+              old bus stand, Vellore 632004<br>
+              Contact: +91-7339559582
+            </div>
+          </div>
         </div>
       </div>
       <div class="bill-header">LAPTOP SERVICE BILL</div>
@@ -2952,8 +2977,8 @@ function displayLaptopBillingForm(laptop) {
 
       <div class="bill-actions">
         <button class="btn btn-success" onclick="saveLaptopBill('${laptop.laptop_id}')">✓ Save Bill</button>
-        <button class="btn btn-primary" onclick="printBill()">🖨 Print Bill</button>
-        <button class="btn btn-secondary" onclick="generatePDF('${laptop.laptop_id}')">📄 Export PDF</button>
+        <button id="printBillBtn" class="btn btn-primary" onclick="printBill()" style="display: none;">🖨 Print Bill</button>
+        <button id="exportPdfBtn" class="btn btn-secondary" onclick="generatePDF('${laptop.laptop_id}')" style="display: none;">📄 Export PDF</button>
       </div>
       
       <script>
@@ -3013,6 +3038,10 @@ function saveLaptopBill(laptopId) {
 
   saveRecords(records);
   alert('✓ Laptop bill saved successfully!');
+  const printBtn = document.getElementById('printBillBtn');
+  const exportBtn = document.getElementById('exportPdfBtn');
+  if (printBtn) printBtn.style.display = 'inline-block';
+  if (exportBtn) exportBtn.style.display = 'inline-block';
   renderRecentBills('');
   renderRecentLaptops('');
   displayLaptopBill(records[laptopIndex]);
@@ -3027,11 +3056,16 @@ function displayLaptopBill(laptop) {
   let billHTML = `
     <div class="bill-container">
       <div class="bill-business-header">
-        <div class="business-name">MYLAVAN MOBILE SERVICE</div>
-        <div class="business-info">
-          Shop no. 23, New municipality complex<br>
-          old bus stand, Vellore 632004<br>
-          Contact: +91-7339559582
+        <div style="display: flex; align-items: center; gap: var(--space-12); margin-bottom: var(--space-8);">
+          <img src="logo.png" alt="MYLAVAN Logo" style="height: 50px; width: 50px; border-radius: var(--radius-8);" />
+          <div>
+            <div class="business-name">MYLAVAN MOBILE SERVICE</div>
+            <div class="business-info">
+              Shop no. 23, New municipality complex<br>
+              old bus stand, Vellore 632004<br>
+              Contact: +91-7339559582
+            </div>
+          </div>
         </div>
       </div>
       <div class="bill-header">LAPTOP SERVICE BILL</div>
@@ -3103,7 +3137,6 @@ function displayLaptopBill(laptop) {
           </div>
         </div>
         <div class="bill-footer-right">
-          <div style="font-weight: bold; margin-bottom: var(--space-32);">Authorized Signature</div>
           <div class="signature-container">
             <div style="height: 60px; margin-bottom: var(--space-8); border-bottom: 1px solid var(--color-border);"></div>
             <div class="signature-line">Authorized Signatory</div>
@@ -3204,11 +3237,16 @@ function displayVendorBillingForm(vendor) {
   const billHTML = `
     <div class="bill-container">
       <div class="bill-business-header">
-        <div class="business-name">MYLAVAN MOBILE SERVICE</div>
-        <div class="business-info">
-          Shop no. 23, New municipality complex<br>
-          old bus stand, Vellore 632004<br>
-          Contact: +91-7339559582
+        <div style="display: flex; align-items: center; gap: var(--space-12); margin-bottom: var(--space-8);">
+          <img src="logo.png" alt="MYLAVAN Logo" style="height: 50px; width: 50px; border-radius: var(--radius-8);" />
+          <div>
+            <div class="business-name">MYLAVAN MOBILE SERVICE</div>
+            <div class="business-info">
+              Shop no. 23, New municipality complex<br>
+              old bus stand, Vellore 632004<br>
+              Contact: +91-7339559582
+            </div>
+          </div>
         </div>
       </div>
       <div class="bill-header">VENDOR SERVICE BILL</div>
@@ -3270,8 +3308,8 @@ function displayVendorBillingForm(vendor) {
       
       <div class="bill-actions">
         <button class="btn btn-success" onclick="saveVendorBill('${vendor.vendor_id}', true)">✓ Save Bill for Selected Phones</button>
-        <button class="btn btn-primary" onclick="printBill()">🖨 Print Bill</button>
-        <button class="btn btn-secondary" onclick="generatePDF('${vendor.vendor_id}')">📄 Export PDF</button>
+        <button id="printBillBtn" class="btn btn-primary" onclick="printBill()" style="display: none;">🖨 Print Bill</button>
+        <button id="exportPdfBtn" class="btn btn-secondary" onclick="generatePDF('${vendor.vendor_id}')" style="display: none;">📄 Export PDF</button>
       </div>
     </div>
   `;
@@ -3400,6 +3438,10 @@ function saveVendorBill(vendorId, isPartial = false) {
   window.selectedPhonesForBilling = null;
   
   alert(`✓ Bill ${billId} created successfully for ${selectedPhoneIds.length} phone(s)!`);
+  const printBtn = document.getElementById('printBillBtn');
+  const exportBtn = document.getElementById('exportPdfBtn');
+  if (printBtn) printBtn.style.display = 'inline-block';
+  if (exportBtn) exportBtn.style.display = 'inline-block';
   renderRecentBills('');
   renderRecentVendors('');
   
@@ -3533,11 +3575,16 @@ function displayVendorBillById(vendorId, billId) {
   let billHTML = `
     <div class="bill-container">
       <div class="bill-business-header">
-        <div class="business-name">MYLAVAN MOBILE SERVICE</div>
-        <div class="business-info">
-          Shop no. 23, New municipality complex<br>
-          old bus stand, Vellore 632004<br>
-          Contact: +91-7339559582
+        <div style="display: flex; align-items: center; gap: var(--space-12); margin-bottom: var(--space-8);">
+          <img src="logo.png" alt="MYLAVAN Logo" style="height: 50px; width: 50px; border-radius: var(--radius-8);" />
+          <div>
+            <div class="business-name">MYLAVAN MOBILE SERVICE</div>
+            <div class="business-info">
+              Shop no. 23, New municipality complex<br>
+              old bus stand, Vellore 632004<br>
+              Contact: +91-7339559582
+            </div>
+          </div>
         </div>
       </div>
       <div class="bill-header">VENDOR SERVICE BILL</div>
@@ -3601,7 +3648,6 @@ function displayVendorBillById(vendorId, billId) {
           </div>
         </div>
         <div class="bill-footer-right">
-          <div style="font-weight: bold; margin-bottom: var(--space-32);">Authorized Signature</div>
           <div class="signature-container">
             <div style="height: 60px; margin-bottom: var(--space-8); border-bottom: 1px solid var(--color-border);"></div>
             <div class="signature-line">Authorized Signatory</div>
@@ -3674,8 +3720,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     console.error('❌ Database initialization failed:', error);
     alert('Warning: Database initialization failed. Data will not persist.');
   }
-  
-  initializeSampleData();
   
   // Initialize laptop service ID
   const records = loadRecords();

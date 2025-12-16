@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mobile Service Manager</title>
+  <title>MYLAVAN - Multi-Brand Mobile & Laptop Service</title>
   <style>
 :root {
   /* Primitive Color Tokens */
@@ -142,8 +142,13 @@
 <body>
   <div class="container">
     <header>
-      <h1>📱 Mobile Service Manager</h1>
-      <p class="subtitle">Service Intake, Billing &amp; Record Management System</p>
+      <div style="display: flex; align-items: center; gap: var(--space-16);">
+        <img src="logo.png" alt="MYLAVAN Logo" style="height: 60px; width: 60px; border-radius: var(--radius-8);" />
+        <div>
+          <h1>📱 MYLAVAN - Multi-Brand Mobile & Laptop Service</h1>
+          <p class="subtitle">Service Intake, Billing &amp; Record Management System</p>
+        </div>
+      </div>
     </header>
 
     <nav class="nav-tabs">
@@ -328,12 +333,12 @@
           <div class="form-row">
             <div class="form-group">
               <label class="form-label" for="receivedBy">Received By <span class="required">*</span></label>
-              <select id="receivedBy" name="receivedBy" class="form-control" required>
-                <option value="">-- Select --</option>
-                <option value="Avinash">Avinash</option>
-                <option value="Aryan">Aryan</option>
-                <option value="Sameer">Sameer</option>
-              </select>
+              <input type="text" id="receivedBy" name="receivedBy" class="form-control" list="receivedByList" placeholder="Select or type name" required />
+              <datalist id="receivedByList">
+                <option value="Syed Sajjid">
+                <option value="Abdul Riyaz">
+                <option value="Avinaush">
+              </datalist>
               <span class="error-msg" id="receivedByError"></span>
             </div>
             <div class="form-group">
@@ -521,9 +526,9 @@
               <label class="form-label" for="laptopReceivedBy">Received By <span class="required">*</span></label>
               <input type="text" id="laptopReceivedBy" name="laptopReceivedBy" class="form-control" list="staffList" placeholder="Select or type name" required />
               <datalist id="staffList">
-                <option value="Avinash">
-                <option value="Aryan">
-                <option value="Sameer">
+                <option value="Syed Sajjid">
+                <option value="Abdul Riyaz">
+                <option value="Avinaush">
               </datalist>
             </div>
           </div>
@@ -598,12 +603,12 @@
             </div>
             <div class="form-group">
               <label class="form-label" for="phoneReceivedBy">Received By <span class="required">*</span></label>
-              <select id="phoneReceivedBy" name="phoneReceivedBy" class="form-control" required>
-                <option value="">-- Select --</option>
-                <option value="Avinash">Avinash</option>
-                <option value="Aryan">Aryan</option>
-                <option value="Sameer">Sameer</option>
-              </select>
+              <input type="text" id="phoneReceivedBy" name="phoneReceivedBy" class="form-control" list="phoneReceivedByList" placeholder="Select or type name" required />
+              <datalist id="phoneReceivedByList">
+                <option value="Syed Sajjid">
+                <option value="Abdul Riyaz">
+                <option value="Avinaush">
+              </datalist>
             </div>
           </div>
           
