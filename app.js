@@ -356,6 +356,15 @@ serviceForm.addEventListener('submit', async (e) => {
   const newServiceId = generateServiceID(records);
   const formData = new FormData(serviceForm);
 
+  // IMEI Validation - Both IMEIs must not be the same
+  const imei1 = formData.get('imei1').trim();
+  const imei2 = formData.get('imei2').trim();
+  
+  if (imei1 && imei2 && imei1 === imei2) {
+    alert('❌ Error: Both IMEI numbers cannot be the same!\n\nPlease enter different IMEI numbers.');
+    return;
+  }
+
   // Gather service types
   const serviceTypes = formData.getAll('serviceType');
   const otherType = formData.get('otherType').trim();
@@ -1517,7 +1526,7 @@ function displayVendorBill(vendor) {
 
       <div class="bill-totals">
         <div>Subtotal: Rs. ${vendor.bill.subtotal.toFixed(2)}</div>
-        <div>Tax: Rs. ${vendor.bill.tax.toFixed(2)}</div>
+        ${vendor.bill.tax > 0 ? `<div>Tax: Rs. ${vendor.bill.tax.toFixed(2)}</div>` : ''}
         <div class="bill-grand-total">Grand Total: Rs. ${vendor.bill.grand_total.toFixed(2)}</div>
       </div>
 
@@ -1531,9 +1540,9 @@ function displayVendorBill(vendor) {
           </div>
         </div>
         <div class="bill-footer-right">
-          <div style="font-weight: bold; margin-bottom: var(--space-12);">Authorized Signature</div>
+          <div style="font-weight: bold; margin-bottom: var(--space-32);">Authorized Signature</div>
           <div class="signature-container">
-            <img src="https://pplx-res.cloudinary.com/image/upload/v1759330125/pplx_project_search_images/6aae375d2d524b360fd03016f7df95541cab5f5f.png" alt="Signature" class="signature-image" />
+            <div style="height: 60px; margin-bottom: var(--space-8); border-bottom: 1px solid var(--color-border);"></div>
             <div class="signature-line">Authorized Signatory</div>
           </div>
         </div>
@@ -1610,7 +1619,7 @@ function displayBill(record) {
 
       <div class="bill-totals">
         <div>Subtotal: Rs. ${record.bill.subtotal.toFixed(2)}</div>
-        <div>Tax: Rs. ${record.bill.tax.toFixed(2)}</div>
+        ${record.bill.tax > 0 ? `<div>Tax: Rs. ${record.bill.tax.toFixed(2)}</div>` : ''}
         <div class="bill-grand-total">Grand Total: Rs. ${record.bill.grand_total.toFixed(2)}</div>
       </div>
 
@@ -1633,9 +1642,9 @@ function displayBill(record) {
           </div>
         </div>
         <div class="bill-footer-right">
-          <div style="font-weight: bold; margin-bottom: var(--space-12);">Authorized Signature</div>
+          <div style="font-weight: bold; margin-bottom: var(--space-32);">Authorized Signature</div>
           <div class="signature-container">
-            <img src="https://pplx-res.cloudinary.com/image/upload/v1759330125/pplx_project_search_images/6aae375d2d524b360fd03016f7df95541cab5f5f.png" alt="Signature" class="signature-image" />
+            <div style="height: 60px; margin-bottom: var(--space-8); border-bottom: 1px solid var(--color-border);"></div>
             <div class="signature-line">Authorized Signatory</div>
           </div>
         </div>
@@ -3071,7 +3080,7 @@ function displayLaptopBill(laptop) {
 
       <div class="bill-totals">
         <div>Subtotal: Rs. ${laptop.bill.subtotal.toFixed(2)}</div>
-        <div>Tax: Rs. ${laptop.bill.tax.toFixed(2)}</div>
+        ${laptop.bill.tax > 0 ? `<div>Tax: Rs. ${laptop.bill.tax.toFixed(2)}</div>` : ''}
         <div class="bill-grand-total">Grand Total: Rs. ${laptop.bill.grand_total.toFixed(2)}</div>
       </div>
 
@@ -3094,9 +3103,9 @@ function displayLaptopBill(laptop) {
           </div>
         </div>
         <div class="bill-footer-right">
-          <div style="font-weight: bold; margin-bottom: var(--space-12);">Authorized Signature</div>
+          <div style="font-weight: bold; margin-bottom: var(--space-32);">Authorized Signature</div>
           <div class="signature-container">
-            <img src="https://pplx-res.cloudinary.com/image/upload/v1759330125/pplx_project_search_images/6aae375d2d524b360fd03016f7df95541cab5f5f.png" alt="Signature" class="signature-image" />
+            <div style="height: 60px; margin-bottom: var(--space-8); border-bottom: 1px solid var(--color-border);"></div>
             <div class="signature-line">Authorized Signatory</div>
           </div>
         </div>
@@ -3578,7 +3587,7 @@ function displayVendorBillById(vendorId, billId) {
 
       <div class="bill-totals">
         <div>Subtotal: Rs. ${bill.subtotal.toFixed(2)}</div>
-        <div>Tax: Rs. ${bill.tax.toFixed(2)}</div>
+        ${bill.tax > 0 ? `<div>GST/Tax: Rs. ${bill.tax.toFixed(2)}</div>` : ''}
         <div class="bill-grand-total">Grand Total: Rs. ${bill.grand_total.toFixed(2)}</div>
       </div>
 
@@ -3592,9 +3601,9 @@ function displayVendorBillById(vendorId, billId) {
           </div>
         </div>
         <div class="bill-footer-right">
-          <div style="font-weight: bold; margin-bottom: var(--space-12);">Authorized Signature</div>
+          <div style="font-weight: bold; margin-bottom: var(--space-32);">Authorized Signature</div>
           <div class="signature-container">
-            <img src="https://pplx-res.cloudinary.com/image/upload/v1759330125/pplx_project_search_images/6aae375d2d524b360fd03016f7df95541cab5f5f.png" alt="Signature" class="signature-image" />
+            <div style="height: 60px; margin-bottom: var(--space-8); border-bottom: 1px solid var(--color-border);"></div>
             <div class="signature-line">Authorized Signatory</div>
           </div>
         </div>
