@@ -1,82 +1,165 @@
-# Mobile Service Manager
+# MYLAVAN Service App - Local Server Version
 
-A comprehensive web-based mobile service management system for tracking repairs, vendor billing, and laptop services.
+This application has been converted to use a local Node.js/Express server with Excel as the database.
 
-## Technologies Used
+## 📁 Project Structure
 
-### Frontend
-- **HTML5** - Semantic structure
-- **CSS3** - Modern responsive design with:
-  - CSS Custom Properties (variables)
-  - Flexbox & Grid layouts
-  - Animations & transitions
-  - Print media queries for A4 bills
-- **Vanilla JavaScript (ES6+)** - Pure JavaScript without frameworks
+```
+mylavan-(V1)/
+├── server.js              # Main Express server
+├── package.json           # Node.js dependencies
+├── app_data.xlsx          # Excel database file
+├── launch-app.vbs         # ⭐ MAIN LAUNCHER (silent, no cmd window)
+├── start-server.bat       # Alternative launcher (shows cmd window)
+├── create-database.js     # Database initialization script
+├── public/                # Frontend files
+│   ├── index.html
+│   ├── style.css
+│   └── app.js            # Frontend JavaScript (API-enabled)
+└── backups/              # Automatic backups folder
+```
 
-### Database
-- **IndexedDB** - Browser-based NoSQL database
-  - Client-side data persistence
-  - No server required
-  - Generous storage limits (GBs available)
+## 🚀 How to Run
 
-### Design System
-- **Blue & Grey Color Scheme**
-  - Primary: Blue (#3b82f6 variants)
-  - Neutral: Grey (#4b5563 variants)
-- **Modern UI Features**
-  - Gradient backgrounds
-  - Box shadows & depth
-  - Hover effects & micro-interactions
-  - Smooth animations
+### Method 1: Double-click `launch-app.vbs` (Recommended)
+- This is the main entry point for users
+- Runs silently without showing command window
+- Automatically opens browser to http://localhost:3000
 
-## Features
+### Method 2: Run `start-server.bat`
+- Shows the server console window
+- Useful for debugging
+- Keep the window open while using the app
 
-### Service Management
-- Mobile phone repair tracking
-- Laptop service management
-- Vendor billing system
-- Customer information management
+## 📊 Excel Database
 
-### Bill Generation
-- Service bills with itemized charges
-- Vendor purchase bills
-- Laptop repair bills
-- GST/Tax calculation
-- Print-optimized A4 format
-- Blank signature section for manual signing
+The application uses `app_data.xlsx` with the following sheets:
 
-### Data Validation
-- IMEI number duplicate checking
-- Form validation
-- Date formatting
-- Price calculations
+1. **Services** - Mobile service records
+2. **Vendors** - Supplier/vendor records
+3. **Laptops** - Laptop service records
+4. **ChangeLog** - Tracks all data modifications
 
-### User Interface
-- Responsive design
-- Tab-based navigation
-- Search functionality
-- Record filtering
-- Print-friendly bill layouts
+## 🔄 Features
 
-## Database Structure
+- ✅ All CRUD operations via REST API
+- ✅ Automatic monthly backups (1st of each month at 2 AM)
+- ✅ Manual backup via API: `POST http://localhost:3000/api/backup`
+- ✅ Change tracking in ChangeLog sheet
+- ✅ Auto-opens browser on server start
+- ✅ Serves static files from `public/` folder
 
-The app uses IndexedDB with the following stores:
-- **records** - Mobile service records
-- **vendors** - Vendor billing records
-- **laptops** - Laptop service records
+## 🔌 API Endpoints
 
-## Browser Compatibility
+### Records
+- `GET /api/records` - Get all records
+- `GET /api/services` - Get all service records
+- `GET /api/vendors` - Get all vendor records
+- `GET /api/laptops` - Get all laptop records
 
-Works in all modern browsers supporting IndexedDB:
-- Chrome/Edge (recommended)
-- Firefox
-- Safari
-- Opera
+### Create
+- `POST /api/services` - Add new service
+- `POST /api/vendors` - Add new vendor
+- `POST /api/laptops` - Add new laptop
 
-## Usage
+### Update
+- `PUT /api/services/:id` - Update service
+- `PUT /api/vendors/:id` - Update vendor
+- `PUT /api/laptops/:id` - Update laptop
 
-Simply open `index.html` in a web browser - no installation or server setup required.
+### Delete
+- `DELETE /api/services/:id` - Delete service
+- `DELETE /api/vendors/:id` - Delete vendor
+- `DELETE /api/laptops/:id` - Delete laptop
 
-## Data Storage
+### Utility
+- `POST /api/backup` - Create manual backup
+- `GET /api/changelog` - Get change history
 
-All data is stored locally in the browser's IndexedDB. Data persists across sessions but is browser-specific. To backup data, use browser export features or implement custom export functionality.
+## 💾 Backups
+
+- **Automatic**: Monthly on the 1st at 2 AM
+- **Manual**: Click "Create Backup" in app or call API
+- **Location**: `backups/` folder
+- **Format**: `app_data_backup_YYYY-MM-DDTHH-MM-SS.xlsx`
+
+## 🛠️ Requirements
+
+- Node.js (v14 or higher)
+- npm (comes with Node.js)
+
+## 📦 Dependencies
+
+- **express**: Web server
+- **xlsx**: Excel file read/write
+- **open**: Auto-open browser
+- **node-schedule**: Scheduled backups
+
+## ⚙️ Configuration
+
+### Change Server Port
+Edit `server.js`:
+```javascript
+const PORT = 3000; // Change to your desired port
+```
+
+### Change Backup Schedule
+Edit `server.js`:
+```javascript
+// Current: 1st of month at 2 AM
+schedule.scheduleJob('0 2 1 * *', () => {
+  createBackup();
+});
+
+// Examples:
+// Daily at 2 AM: '0 2 * * *'
+// Every hour: '0 * * * *'
+// Every Sunday at 3 AM: '0 3 * * 0'
+```
+
+## 🔧 Troubleshooting
+
+### Server won't start
+1. Check if Node.js is installed: `node --version`
+2. Check if port 3000 is available
+3. Run `npm install` to ensure dependencies are installed
+
+### Can't save data
+1. Ensure server is running
+2. Check browser console for errors
+3. Verify `app_data.xlsx` is not open in Excel
+
+### Browser doesn't open automatically
+- Manually navigate to http://localhost:3000
+
+## 📝 Development
+
+To run in development mode:
+```bash
+npm start
+```
+
+To manually start:
+```bash
+node server.js
+```
+
+## 🔒 Security Notes
+
+- This is a **local-only** application (localhost:3000)
+- Not designed for internet/network access
+- No authentication/authorization built-in
+- Excel file contains all sensitive data
+
+## 📅 Changelog
+
+### v1.0.0 (Current)
+- Converted from IndexedDB to Excel database
+- Added Express REST API
+- Implemented automatic backups
+- Created VBS launcher for silent execution
+- Added change tracking
+
+---
+
+**Note**: Keep the Excel file (`app_data.xlsx`) backed up separately for extra safety!

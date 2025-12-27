@@ -1,148 +1,41 @@
 'use strict';
 
 // ============================================
-// INDEXEDDB DATABASE MANAGEMENT
+// API CLIENT - REPLACES INDEXEDDB
 // ============================================
 
-const DB_NAME = 'MobileServiceDB';
-const DB_VERSION = 1;
-const STORE_NAME = 'records';
-let db = null;
+const API_BASE = 'http://localhost:3001/api';
 let cachedRecords = [];
 let dbReady = false;
 
 /**
- * Initialize IndexedDB
+ * Initialize - Load data from server API
  */
 function initDB() {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-    
-    request.onerror = () => {
-      console.error('Database error:', request.error);
-      reject(request.error);
-    };
-    
-    request.onsuccess = () => {
-      db = request.result;
-      dbReady = true;
-      console.log('✓ Database opened');
-      // Load initial data into cache
-      _loadFromDB().then(records => {
+    fetch(`${API_BASE}/records`)
+      .then(response => {
+        if (!response.ok) throw new Error('Failed to load records');
+        return response.json();
+      })
+      .then(records => {
         cachedRecords = records;
-        console.log('✓ Loaded', records.length, 'records into cache');
-        resolve(db);
-      }).catch(err => {
-        console.error('Error loading from DB:', err);
-        cachedRecords = [];
-        resolve(db);
-      });
-    };
-    
-    request.onupgradeneeded = (event) => {
-      db = event.target.result;
-      console.log('✓ Database upgrade triggered');
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        const objectStore = db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
-        objectStore.createIndex('record_type', 'record_type', { unique: false });
-        objectStore.createIndex('service_id', 'service_id', { unique: false });
-        objectStore.createIndex('vendor_id', 'vendor_id', { unique: false });
-        objectStore.createIndex('laptop_id', 'laptop_id', { unique: false });
-        objectStore.createIndex('timestamp', 'timestamp', { unique: false });
-        console.log('✓ Object store created with indexes');
-      }
-    };
-  });
-}
-
-/**
- * Internal function to load from database
- */
-function _loadFromDB() {
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([STORE_NAME], 'readonly');
-    const objectStore = transaction.objectStore(STORE_NAME);
-    const request = objectStore.getAll();
-    
-    request.onsuccess = () => {
-      const records = request.result || [];
-      resolve(records);
-    };
-    
-    request.onerror = () => {
-      console.error('Error loading records:', request.error);
-      reject(request.error);
-    };
-  });
-}
-
-/**
- * Internal function to save to database
- */
-function _saveToDB(records) {
-  return new Promise((resolve, reject) => {
-    if (!db) {
-      reject(new Error('Database not initialized'));
-      return;
-    }
-    
-    const transaction = db.transaction([STORE_NAME], 'readwrite');
-    const objectStore = transaction.objectStore(STORE_NAME);
-    
-    // Clear existing data
-    const clearRequest = objectStore.clear();
-    
-    clearRequest.onsuccess = () => {
-      // Add all records
-      if (records.length === 0) {
-        console.log('✓ Cleared all records from database');
+        dbReady = true;
+        console.log('✓ Loaded', records.length, 'records from server');
         resolve(true);
-        return;
-      }
-      
-      let addedCount = 0;
-      let hasError = false;
-      
-      records.forEach((record, index) => {
-        // Remove the auto-increment id if it exists to avoid conflicts
-        const recordToSave = {...record};
-        delete recordToSave.id;
-        
-        const addRequest = objectStore.add(recordToSave);
-        
-        addRequest.onsuccess = () => {
-          addedCount++;
-          if (addedCount === records.length && !hasError) {
-            console.log('✓ Saved', records.length, 'records to database');
-            resolve(true);
-          }
-        };
-        
-        addRequest.onerror = () => {
-          hasError = true;
-          console.error(`Error adding record ${index}:`, addRequest.error);
-        };
+      })
+      .catch(error => {
+        console.error('Database error:', error);
+        alert('⚠ Warning: Could not connect to server. Please ensure the server is running.');
+        cachedRecords = [];
+        dbReady = false;
+        reject(error);
       });
-    };
-    
-    clearRequest.onerror = () => {
-      console.error('Error clearing records:', clearRequest.error);
-      reject(clearRequest.error);
-    };
-    
-    transaction.onerror = () => {
-      console.error('Transaction error:', transaction.error);
-      reject(transaction.error);
-    };
-    
-    transaction.oncomplete = () => {
-      console.log('✓ Transaction completed successfully');
-    };
   });
 }
 
 /**
- * Load records (synchronous-looking, uses cache)
+ * Load records (from cache)
  */
 function loadRecords() {
   console.log('✓ Loaded', cachedRecords.length, 'records from cache');
@@ -150,24 +43,144 @@ function loadRecords() {
 }
 
 /**
- * Save records (synchronous, updates cache and DB in background)
+ * Save records (to server API and update cache)
  */
-function saveRecords(records) {
+async function saveRecords(records) {
+  // Update cache immediately for UI responsiveness
   cachedRecords = [...records];
   console.log('✓ Cached', records.length, 'records');
   
-  // Save to database immediately (non-blocking)
-  if (dbReady && db) {
-    _saveToDB(records).catch(error => {
-      console.error('Background save error:', error);
-      alert('Warning: Error saving to database. Data may not persist.');
-    });
-  } else {
-    console.warn('⚠ Database not ready, data only in memory cache');
-  }
+  // Note: Individual operations use specific API endpoints (POST /services, etc.)
+  // This function is kept for compatibility but actual saves happen via API calls
   
   return true;
 }
+
+/**
+ * Add service record via API
+ */
+async function addServiceRecord(record) {
+  try {
+    const response = await fetch(`${API_BASE}/services`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(record)
+    });
+    
+    if (!response.ok) throw new Error('Failed to add service');
+    const newRecord = await response.json();
+    
+    // Refresh cache
+    await initDB();
+    return newRecord;
+  } catch (error) {
+    console.error('Error adding service:', error);
+    alert('Error saving service. Please try again.');
+    throw error;
+  }
+}
+
+/**
+ * Update service record via API
+ */
+async function updateServiceRecord(id, updates) {
+  try {
+    const response = await fetch(`${API_BASE}/services/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates)
+    });
+    
+    if (!response.ok) throw new Error('Failed to update service');
+    const updatedRecord = await response.json();
+    
+    // Refresh cache
+    await initDB();
+    return updatedRecord;
+  } catch (error) {
+    console.error('Error updating service:', error);
+    throw error;
+  }
+}
+
+/**
+ * Add vendor record via API
+ */
+async function addVendorRecord(record) {
+  try {
+    const response = await fetch(`${API_BASE}/vendors`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(record)
+    });
+    if (!response.ok) throw new Error('Failed to add vendor');
+    await initDB();
+    return await response.json();
+  } catch (error) {
+    console.error('Error adding vendor:', error);
+    alert('Error saving vendor. Please try again.');
+    throw error;
+  }
+}
+
+/**
+ * Add laptop record via API
+ */
+async function addLaptopRecord(record) {
+  try {
+    const response = await fetch(`${API_BASE}/laptops`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(record)
+    });
+    if (!response.ok) throw new Error('Failed to add laptop');
+    await initDB();
+    return await response.json();
+  } catch (error) {
+    console.error('Error adding laptop:', error);
+    alert('Error saving laptop. Please try again.');
+    throw error;
+  }
+}
+
+/**
+ * Update vendor record via API
+ */
+async function updateVendorRecord(id, updates) {
+  try {
+    const response = await fetch(`${API_BASE}/vendors/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates)
+    });
+    if (!response.ok) throw new Error('Failed to update vendor');
+    await initDB();
+    return await response.json();
+  } catch (error) {
+    console.error('Error updating vendor:', error);
+    throw error;
+  }
+}
+
+/**
+ * Update laptop record via API
+ */
+async function updateLaptopRecord(id, updates) {
+  try {
+    const response = await fetch(`${API_BASE}/laptops/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates)
+    });
+    if (!response.ok) throw new Error('Failed to update laptop');
+    await initDB();
+    return await response.json();
+  } catch (error) {
+    console.error('Error updating laptop:', error);
+    throw error;
+  }
+}
+
 
 function generateServiceID(records) {
   const base = 'SRV';
@@ -404,31 +417,33 @@ serviceForm.addEventListener('submit', async (e) => {
     timestamp: new Date().toISOString()
   };
 
-  // Save to localStorage
-  // Add record type for individual services
+  // Save to server via API
   record.record_type = 'service';
-  records.push(record);
-  saveRecords(records);
   
-  console.log('✓ Service saved:', newServiceId, 'Total records:', records.length);
+  try {
+    await addServiceRecord(record);
+    console.log('✓ Service saved:', newServiceId);
 
-  alert(`✓ Service submitted successfully!\n\nService ID: ${newServiceId}\n\nPlease note this ID for billing.`);
-  
-  // Reset form
-  serviceForm.reset();
-  document.getElementById('frontImagePreview').innerHTML = '';
-  document.getElementById('backImagePreview').innerHTML = '';
-  // Clear image data
-  document.getElementById('frontImage').dataset.imageData = '';
-  document.getElementById('backImage').dataset.imageData = '';
-  
-  // Fill dates again after reset
-  setTimeout(fillAllDateFields, 50);
-  
-  // Refresh the recent services list
-  setTimeout(() => {
-    renderRecentServices('');
-  }, 100);
+    alert(`✓ Service submitted successfully!\n\nService ID: ${newServiceId}\n\nPlease note this ID for billing.`);
+    
+    // Reset form
+    serviceForm.reset();
+    document.getElementById('frontImagePreview').innerHTML = '';
+    document.getElementById('backImagePreview').innerHTML = '';
+    // Clear image data
+    document.getElementById('frontImage').dataset.imageData = '';
+    document.getElementById('backImage').dataset.imageData = '';
+    
+    // Fill dates again after reset
+    setTimeout(fillAllDateFields, 50);
+    
+    // Refresh the recent services list
+    setTimeout(() => {
+      renderRecentServices('');
+    }, 100);
+  } catch (error) {
+    console.error('Error saving service:', error);
+  }
 });
 
 // ============================================
@@ -466,18 +481,20 @@ createVendorForm.addEventListener('submit', async (e) => {
     timestamp: new Date().toISOString()
   };
   
-  records.push(vendorRecord);
-  saveRecords(records);
-  
-  alert(`✓ Vendor ${newVendorId} created!\n\nVendor: ${vendorRecord.vendor_name}\nMobile: ${vendorRecord.mobile_number}\n\nNow you can add phones to this vendor.`);
-  
-  createVendorForm.reset();
-  updateVendorDropdown();
-  renderRecentVendors('');
+  try {
+    await addVendorRecord(vendorRecord);
+    alert(`✓ Vendor ${newVendorId} created!\n\nVendor: ${vendorRecord.vendor_name}\nMobile: ${vendorRecord.mobile_number}\n\nNow you can add phones to this vendor.`);
+    
+    createVendorForm.reset();
+    updateVendorDropdown();
+    renderRecentVendors('');
+  } catch (error) {
+    console.error('Error creating vendor:', error);
+  }
 });
 
 // Add phone to vendor form submission
-addPhoneForm.addEventListener('submit', (e) => {
+addPhoneForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   
   const records = loadRecords();
@@ -490,6 +507,12 @@ addPhoneForm.addEventListener('submit', (e) => {
   }
   
   const vendor = records[vendorIndex];
+  
+  // Initialize phones array if it doesn't exist
+  if (!vendor.phones) {
+    vendor.phones = [];
+  }
+  
   const phoneNumber = vendor.phones.length + 1;
   const phoneId = generatePhoneID(vendorId, phoneNumber);
   
@@ -509,21 +532,31 @@ addPhoneForm.addEventListener('submit', (e) => {
   };
   
   vendor.phones.push(phone);
-  records[vendorIndex] = vendor;
-  saveRecords(records);
   
-  alert(`✓ Phone added to ${vendor.vendor_name}!\n\nPhone ID: ${phoneId}\n${phone.brand} ${phone.model}`);
-  
-  // Clear form except vendor selection
-  document.getElementById('phoneBrand').value = '';
-  document.getElementById('phoneModel').value = '';
-  document.getElementById('phoneIssue').value = '';
-  document.getElementById('phoneReceivedBy').value = '';
-  
-  // Fill dates again after clearing
-  setTimeout(fillAllDateFields, 50);
-  
-  renderRecentVendors('');
+  try {
+    await updateVendorRecord(vendor.vendor_id, vendor);
+    
+    // Success! Cache is now refreshed by initDB()
+    console.log('✓ Phone added successfully, cache refreshed');
+    
+    alert(`✓ Phone added to ${vendor.vendor_name}!\n\nPhone ID: ${phoneId}\n${phone.brand} ${phone.model}`);
+    
+    // Clear form except vendor selection
+    document.getElementById('phoneBrand').value = '';
+    document.getElementById('phoneModel').value = '';
+    document.getElementById('phoneIssue').value = '';
+    document.getElementById('phoneReceivedBy').value = '';
+    
+    // Fill dates again after clearing
+    setTimeout(fillAllDateFields, 50);
+    
+    // Refresh displays
+    renderRecentVendors('');
+    renderAllRecords('');
+  } catch (error) {
+    console.error('Error adding phone:', error);
+    alert('Error adding phone. Please try again.');
+  }
 });
 
 // Update vendor dropdown
@@ -720,11 +753,11 @@ function renderRecentVendors(filter = '') {
   // Show in reverse order (most recent first)
   filtered.slice().reverse().forEach(rec => {
     const li = document.createElement('li');
-    const totalPhones = rec.phones.length;
-    const receivedCount = rec.phones.filter(p => p.status === 'Received').length;
-    const inRepairCount = rec.phones.filter(p => p.status === 'In Repair').length;
-    const readyCount = rec.phones.filter(p => p.status === 'Ready').length;
-    const billedCount = rec.phones.filter(p => p.status === 'Billed').length;
+    const totalPhones = rec.phones ? rec.phones.length : 0;
+    const receivedCount = rec.phones ? rec.phones.filter(p => p.status === 'Received').length : 0;
+    const inRepairCount = rec.phones ? rec.phones.filter(p => p.status === 'In Repair').length : 0;
+    const readyCount = rec.phones ? rec.phones.filter(p => p.status === 'Ready').length : 0;
+    const billedCount = rec.phones ? rec.phones.filter(p => p.status === 'Billed').length : 0;
     const billsCount = rec.bills ? rec.bills.length : 0;
     
     li.innerHTML = `
@@ -786,22 +819,24 @@ laptopServiceForm.addEventListener('submit', async (e) => {
     timestamp: new Date().toISOString()
   };
   
-  records.push(laptopData);
-  saveRecords(records);
-  
-  alert(`✓ Laptop Service ${laptopId} created successfully!\n\nContact: ${laptopData.contact_number}\nLaptop: ${laptopData.laptop_brand} ${laptopData.model}\n\nPlease note this ID for billing.`);
-  
-  // Clear form
-  laptopServiceForm.reset();
-  
-  // Update next ID display
-  const nextId = generateLaptopID(loadRecords());
-  document.getElementById('laptopServiceId').value = nextId;
-  
-  // Fill dates again after reset
-  setTimeout(fillAllDateFields, 50);
-  
-  renderRecentLaptops('');
+  try {
+    await addLaptopRecord(laptopData);
+    alert(`✓ Laptop Service ${laptopId} created successfully!\n\nContact: ${laptopData.contact_number}\nLaptop: ${laptopData.laptop_brand} ${laptopData.model}\n\nPlease note this ID for billing.`);
+    
+    // Clear form
+    laptopServiceForm.reset();
+    
+    // Update next ID display
+    const nextId = generateLaptopID(loadRecords());
+    document.getElementById('laptopServiceId').value = nextId;
+    
+    // Fill dates again after reset
+    setTimeout(fillAllDateFields, 50);
+    
+    renderRecentLaptops('');
+  } catch (error) {
+    console.error('Error creating laptop service:', error);
+  }
 });
 
 clearLaptopFormBtn.addEventListener('click', () => {
@@ -933,7 +968,7 @@ function createLaptopModal(laptopId) {
           <div><strong>Brand:</strong> ${laptop.laptop_brand}</div>
           <div><strong>Model:</strong> ${laptop.model}</div>
           <div><strong>Condition:</strong> ${laptop.condition}</div>
-          <div><strong>Accessories:</strong> ${laptop.accessories.length > 0 ? laptop.accessories.join(', ') : 'None'}</div>
+          <div><strong>Accessories:</strong> ${Array.isArray(laptop.accessories) && laptop.accessories.length > 0 ? laptop.accessories.join(', ') : 'None'}</div>
         </div>
       </div>
     </div>
@@ -1253,9 +1288,9 @@ function displayBillingForm(record) {
 
       <div class="bill-section-title">Service Details</div>
       <div style="font-size: 0.9rem; line-height: 1.8;">
-        Service Type: ${record.service_type.join(', ')}<br>
+        Service Type: ${Array.isArray(record.service_type) ? record.service_type.join(', ') : (record.service_type || 'N/A')}<br>
         Received By: ${record.received_by}<br>
-        Accessories: ${record.accessories.length > 0 ? record.accessories.join(', ') : 'None'}<br>
+        Accessories: ${Array.isArray(record.accessories) && record.accessories.length > 0 ? record.accessories.join(', ') : 'None'}<br>
         Estimated Delivery: ${record.estimated_delivery}
       </div>
 
@@ -1415,7 +1450,7 @@ function removeItemRow(btn) {
 // Make functions globally accessible for inline HTML
 window.removeItemRow = removeItemRow;
 
-function saveBill(serviceId) {
+async function saveBill(serviceId) {
   const records = loadRecords();
   const recordIndex = records.findIndex(r => r.service_id === serviceId);
   
@@ -1446,7 +1481,7 @@ function saveBill(serviceId) {
   const fromDate = document.getElementById('warrantyFromDate')?.value || new Date().toISOString().slice(0, 10);
   const toDate = document.getElementById('warrantyToDate')?.value || calculateWarrantyEndDate(fromDate, warrantyPeriod);
 
-  records[recordIndex].bill = {
+  const billData = {
     items: items,
     subtotal: subtotal,
     tax: tax,
@@ -1456,18 +1491,25 @@ function saveBill(serviceId) {
     to_date: toDate,
     saved_at: new Date().toISOString()
   };
+  
+  records[recordIndex].bill = billData;
 
-  saveRecords(records);
-  alert('✓ Bill saved successfully!');
-  
-  // Show Print Bill and Export PDF buttons after successful save
-  const printBtn = document.getElementById('printBillBtn');
-  const exportBtn = document.getElementById('exportPdfBtn');
-  if (printBtn) printBtn.style.display = 'inline-block';
-  if (exportBtn) exportBtn.style.display = 'inline-block';
-  
-  renderRecentBills('');
-  displayBill(records[recordIndex]);
+  try {
+    await updateServiceRecord(records[recordIndex].service_id, records[recordIndex]);
+    alert('✓ Bill saved successfully!');
+    
+    // Show Print Bill and Export PDF buttons after successful save
+    const printBtn = document.getElementById('printBillBtn');
+    const exportBtn = document.getElementById('exportPdfBtn');
+    if (printBtn) printBtn.style.display = 'inline-block';
+    if (exportBtn) exportBtn.style.display = 'inline-block';
+    
+    renderRecentBills('');
+    displayBill(records[recordIndex]);
+  } catch (error) {
+    console.error('Error saving bill:', error);
+    alert('Error saving bill. Please try again.');
+  }
 }
 
 // Display vendor bill
@@ -1837,17 +1879,20 @@ window.resetDateFilter = resetDateFilter;
 
 function renderAllRecords(filter = '', recordFilter = 'all') {
   const records = loadRecords();
+  console.log('🔍 renderAllRecords called:', 'filter=', filter, 'recordFilter=', recordFilter, 'total records=', records.length);
   
   // Apply date filter first
   let dateFiltered = records;
   if (currentDateFilter) {
+    console.log('📅 Date filter active:', currentDateFilter);
     const fromDate = new Date(currentDateFilter.fromDate);
     const toDate = new Date(currentDateFilter.toDate);
     
     dateFiltered = records.filter(record => {
-      const recordDate = new Date(record.date);
+      const recordDate = new Date(record.date || record.created_date);
       return recordDate >= fromDate && recordDate <= toDate;
     });
+    console.log('📅 After date filter:', dateFiltered.length, 'records');
   }
   
   // Apply record type filter
@@ -1859,9 +1904,15 @@ function renderAllRecords(filter = '', recordFilter = 'all') {
   } else if (recordFilter === 'vendor') {
     filteredByType = dateFiltered.filter(r => r.record_type === 'vendor');
   }
+  console.log('🏷️ After type filter:', filteredByType.length, 'records');
   
   // Apply search filter
   const filtered = filteredByType.filter(rec => {
+    // If no search filter, include all
+    if (!filter || filter.trim() === '') {
+      return true;
+    }
+    
     if (rec.record_type === 'vendor') {
       const vendorIdMatch = rec.vendor_id.toLowerCase().includes(filter.toLowerCase());
       const nameMatch = rec.vendor_name.toLowerCase().includes(filter.toLowerCase());
@@ -1880,12 +1931,17 @@ function renderAllRecords(filter = '', recordFilter = 'all') {
     }
   });
 
+  console.log('🔎 After search filter:', filtered.length, 'records');
+  console.log('📋 Filtered records:', filtered.map(r => ({type: r.record_type, id: r.service_id || r.vendor_id || r.laptop_id})));
+
   // Update summary with filtered records
   updateSummaryWithFiltered(filtered);
   
   allRecordsList.innerHTML = '';
+  console.log('📝 Rendering to element:', allRecordsList);
 
   if (filtered.length === 0) {
+    console.log('⚠️ No records to display');
     const li = document.createElement('li');
     li.className = 'empty';
     li.textContent = currentDateFilter ? 'No records found for selected date range' : 'No records found';
@@ -1893,10 +1949,12 @@ function renderAllRecords(filter = '', recordFilter = 'all') {
     return;
   }
 
-  filtered.slice().reverse().forEach(rec => {
-    const li = document.createElement('li');
+  console.log('✅ Rendering', filtered.length, 'records...');
+  filtered.slice().reverse().forEach((rec, index) => {
+    try {
+      const li = document.createElement('li');
     
-    if (rec.record_type === 'laptop') {
+      if (rec.record_type === 'laptop') {
       // Laptop record display
       const billStatus = rec.bill ? `✅ Billed (Rs. ${rec.bill.grand_total})` : '⏳ Pending Bill';
       const warrantyInfo = rec.bill ? ` | Warranty: ${rec.bill.warranty === '6' ? '6 months' : '3 months'}` : '';
@@ -1935,12 +1993,12 @@ function renderAllRecords(filter = '', recordFilter = 'all') {
       });
     } else if (rec.record_type === 'vendor') {
       // Vendor record display
-      const totalPhones = rec.phones.length;
+      const totalPhones = rec.phones ? rec.phones.length : 0;
       const billsCount = rec.bills ? rec.bills.length : 0;
-      const receivedCount = rec.phones.filter(p => p.status === 'Received').length;
-      const inRepairCount = rec.phones.filter(p => p.status === 'In Repair').length;
-      const readyCount = rec.phones.filter(p => p.status === 'Ready').length;
-      const billedCount = rec.phones.filter(p => p.status === 'Billed').length;
+      const receivedCount = rec.phones ? rec.phones.filter(p => p.status === 'Received').length : 0;
+      const inRepairCount = rec.phones ? rec.phones.filter(p => p.status === 'In Repair').length : 0;
+      const readyCount = rec.phones ? rec.phones.filter(p => p.status === 'Ready').length : 0;
+      const billedCount = rec.phones ? rec.phones.filter(p => p.status === 'Billed').length : 0;
       
       li.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
@@ -1968,7 +2026,8 @@ function renderAllRecords(filter = '', recordFilter = 'all') {
       // Individual service record display
       const billStatus = rec.bill ? `✅ Billed (Rs. ${rec.bill.grand_total})` : '⏳ Pending Bill';
       const warrantyInfo = rec.bill ? ` | Warranty: ${rec.bill.warranty === '6' ? '6 months' : '3 months'}` : '';
-      const issuePreview = rec.issue.length > 50 ? rec.issue.substring(0, 50) + '...' : rec.issue;
+      const issuePreview = rec.issue ? (rec.issue.length > 50 ? rec.issue.substring(0, 50) + '...' : rec.issue) : 'No issue description';
+      const serviceTypes = Array.isArray(rec.service_type) ? rec.service_type.join(', ') : (rec.service_type || 'N/A');
       
       li.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
@@ -1978,7 +2037,7 @@ function renderAllRecords(filter = '', recordFilter = 'all') {
               👤 <strong>INDIVIDUAL</strong> | 📱 ${rec.mobile_brand} ${rec.model} | 📅 ${rec.date} | ⏰ Est. Delivery: ${rec.estimated_delivery}
             </div>
             <div style="font-size: 0.85rem; color: var(--color-text-secondary); margin-top: 2px;">
-              🔧 ${rec.service_type.join(', ')} | 👤 ${rec.received_by}
+              🔧 ${serviceTypes} | 👤 ${rec.received_by}
             </div>
             <div style="font-size: 0.85rem; color: var(--color-text-secondary); margin-top: 2px;">
               📝 ${issuePreview}
@@ -2008,6 +2067,10 @@ function renderAllRecords(filter = '', recordFilter = 'all') {
     }
     
     allRecordsList.appendChild(li);
+    console.log('✓ Rendered record:', rec.service_id || rec.vendor_id || rec.laptop_id);
+    } catch (error) {
+      console.error('Error rendering record:', rec, error);
+    }
   });
 }
 
@@ -2026,9 +2089,15 @@ document.addEventListener('change', (e) => {
 
 // Modal functionality
 function createModal(serviceId) {
+  console.log('🔍 createModal called with:', serviceId);
   const records = loadRecords();
+  console.log('📋 Total records:', records.length);
   const record = records.find(r => r.service_id === serviceId);
-  if (!record) return;
+  console.log('🎯 Found record:', record);
+  if (!record) {
+    console.error('❌ Record not found for serviceId:', serviceId);
+    return;
+  }
 
   // Create modal overlay
   const modalOverlay = document.createElement('div');
@@ -2112,10 +2181,10 @@ function createModal(serviceId) {
       <div>
         <h3 style="color: var(--color-primary); margin-bottom: var(--space-12); font-size: var(--font-size-lg);">🔧 Service Details</h3>
         <div style="background-color: var(--color-bg-3); padding: var(--space-16); border-radius: var(--radius-base); line-height: 1.8;">
-          <div><strong>Issue:</strong> ${record.issue}</div>
-          <div><strong>Service Type:</strong> ${record.service_type.join(', ')}</div>
-          <div><strong>Condition:</strong> ${record.mobile_condition}</div>
-          <div><strong>Accessories:</strong> ${record.accessories.length > 0 ? record.accessories.join(', ') : 'None'}</div>
+          <div><strong>Issue:</strong> ${record.issue || 'N/A'}</div>
+          <div><strong>Service Type:</strong> ${Array.isArray(record.service_type) ? record.service_type.join(', ') : (record.service_type || 'N/A')}</div>
+          <div><strong>Condition:</strong> ${record.mobile_condition || 'N/A'}</div>
+          <div><strong>Accessories:</strong> ${Array.isArray(record.accessories) && record.accessories.length > 0 ? record.accessories.join(', ') : 'None'}</div>
         </div>
       </div>
       
@@ -2209,10 +2278,12 @@ function closeModal(modalOverlay) {
 
 // Helper functions for All Records actions
 function viewRecordDetails(serviceId) {
+  console.log('👁️ viewRecordDetails called with:', serviceId);
   createModal(serviceId);
 }
 
 function createBillForRecord(serviceId) {
+  console.log('💰 createBillForRecord called with:', serviceId);
   searchBillInput.value = serviceId;
   showSection('billing');
   searchAndLoadRecord();
@@ -2249,6 +2320,10 @@ function openVendorDetailsModal(vendorId) {
   const records = loadRecords();
   const vendor = records.find(r => r.vendor_id === vendorId);
   if (!vendor) return;
+
+  // Initialize arrays if they don't exist
+  if (!vendor.phones) vendor.phones = [];
+  if (!vendor.bills) vendor.bills = [];
 
   // Calculate summary statistics
   const totalPhones = vendor.phones.length;
@@ -2459,10 +2534,11 @@ function openVendorDetailsModal(vendorId) {
 }
 
 // Update phone status
-function updatePhoneStatus(phoneId, newStatus) {
+async function updatePhoneStatus(phoneId, newStatus) {
   const records = loadRecords();
   
   let vendorId = null;
+  let vendorRecord = null;
   for (let record of records) {
     if (record.record_type === 'vendor') {
       const phone = record.phones.find(p => p.phone_id === phoneId);
@@ -2474,20 +2550,27 @@ function updatePhoneStatus(phoneId, newStatus) {
           phone.completed = false;
         }
         vendorId = record.vendor_id;
-        saveRecords(records);
+        vendorRecord = record;
         break;
       }
     }
   }
   
-  if (vendorId) {
-    // Close current modal and reopen with fresh data
-    const modal = document.querySelector('.modal-overlay.vendor-modal');
-    if (modal) {
-      closeModal(modal);
-      setTimeout(() => {
-        openVendorDetailsModal(vendorId);
-      }, 100);
+  if (vendorId && vendorRecord) {
+    try {
+      await updateVendorRecord(vendorRecord.vendor_id, vendorRecord);
+      
+      // Close current modal and reopen with fresh data
+      const modal = document.querySelector('.modal-overlay.vendor-modal');
+      if (modal) {
+        closeModal(modal);
+        setTimeout(() => {
+          openVendorDetailsModal(vendorId);
+        }, 100);
+      }
+    } catch (error) {
+      console.error('Error updating phone status:', error);
+      alert('Error updating status. Please try again.');
     }
   }
 }
@@ -2906,7 +2989,7 @@ function displayLaptopBillingForm(laptop) {
         Brand: ${laptop.laptop_brand}<br>
         Model: ${laptop.model}<br>
         Condition: ${laptop.condition}<br>
-        Accessories: ${laptop.accessories.length > 0 ? laptop.accessories.join(', ') : 'None'}<br>
+        Accessories: ${Array.isArray(laptop.accessories) && laptop.accessories.length > 0 ? laptop.accessories.join(', ') : 'None'}<br>
         Issue: ${laptop.issue}
       </div>
 
@@ -2996,7 +3079,7 @@ function displayLaptopBillingForm(laptop) {
   }, 100);
 }
 
-function saveLaptopBill(laptopId) {
+async function saveLaptopBill(laptopId) {
   const records = loadRecords();
   const laptopIndex = records.findIndex(r => r.laptop_id === laptopId);
   
@@ -3025,7 +3108,7 @@ function saveLaptopBill(laptopId) {
   const fromDate = document.getElementById('warrantyFromDate')?.value || new Date().toISOString().slice(0, 10);
   const toDate = document.getElementById('warrantyToDate')?.value || calculateWarrantyEndDate(fromDate, warrantyPeriod);
 
-  records[laptopIndex].bill = {
+  const billData = {
     items: items,
     subtotal: subtotal,
     tax: tax,
@@ -3035,16 +3118,23 @@ function saveLaptopBill(laptopId) {
     to_date: toDate,
     saved_at: new Date().toISOString()
   };
+  
+  records[laptopIndex].bill = billData;
 
-  saveRecords(records);
-  alert('✓ Laptop bill saved successfully!');
-  const printBtn = document.getElementById('printBillBtn');
-  const exportBtn = document.getElementById('exportPdfBtn');
-  if (printBtn) printBtn.style.display = 'inline-block';
-  if (exportBtn) exportBtn.style.display = 'inline-block';
-  renderRecentBills('');
-  renderRecentLaptops('');
-  displayLaptopBill(records[laptopIndex]);
+  try {
+    await updateLaptopRecord(records[laptopIndex].laptop_id, records[laptopIndex]);
+    alert('✓ Laptop bill saved successfully!');
+    const printBtn = document.getElementById('printBillBtn');
+    const exportBtn = document.getElementById('exportPdfBtn');
+    if (printBtn) printBtn.style.display = 'inline-block';
+    if (exportBtn) exportBtn.style.display = 'inline-block';
+    renderRecentBills('');
+    renderRecentLaptops('');
+    displayLaptopBill(records[laptopIndex]);
+  } catch (error) {
+    console.error('Error saving laptop bill:', error);
+    alert('Error saving bill. Please try again.');
+  }
 }
 
 function displayLaptopBill(laptop) {
@@ -3079,7 +3169,7 @@ function displayLaptopBill(laptop) {
       <div class="bill-section-title">Laptop Details</div>
       <div style="font-size: 0.9rem; line-height: 1.8;">
         Brand: ${laptop.laptop_brand} | Model: ${laptop.model}<br>
-        Condition: ${laptop.condition} | Accessories: ${laptop.accessories.length > 0 ? laptop.accessories.join(', ') : 'None'}<br>
+        Condition: ${laptop.condition} | Accessories: ${Array.isArray(laptop.accessories) && laptop.accessories.length > 0 ? laptop.accessories.join(', ') : 'None'}<br>
         Issue: ${laptop.issue}
       </div>
 
@@ -3319,7 +3409,7 @@ function displayVendorBillingForm(vendor) {
 }
 
 // Save vendor bill (with partial billing support)
-function saveVendorBill(vendorId, isPartial = false) {
+async function saveVendorBill(vendorId, isPartial = false) {
   const records = loadRecords();
   const vendorIndex = records.findIndex(r => r.vendor_id === vendorId);
   
@@ -3385,21 +3475,31 @@ function saveVendorBill(vendorId, isPartial = false) {
       vendor.bills[existingBillIndex].grand_total = grandTotal;
       vendor.bills[existingBillIndex].updated_at = new Date().toISOString();
       
-      // Save
-      records[vendorIndex] = vendor;
-      saveRecords(records);
-      
-      // Clear selected phones
-      window.selectedPhonesForBilling = null;
-      
-      alert(`✓ Bill ${billId} updated successfully!`);
-      renderRecentBills('');
-      renderRecentVendors('');
-      
-      // Display the updated bill
-      displayVendorBillById(vendorId, billId);
-      return;
+      // Save via API
+      try {
+        await updateVendorRecord(vendor.vendor_id, vendor);
+        
+        // Clear selected phones
+        window.selectedPhonesForBilling = null;
+        
+        alert(`✓ Bill ${billId} updated successfully!`);
+        renderRecentBills('');
+        renderRecentVendors('');
+        
+        // Display the updated bill
+        displayVendorBillById(vendorId, billId);
+        return;
+      } catch (error) {
+        console.error('Error updating bill:', error);
+        alert('Error updating bill. Please try again.');
+        return;
+      }
     }
+  }
+  
+  // Initialize bills array if it doesn't exist
+  if (!vendor.bills) {
+    vendor.bills = [];
   }
   
   // Create new bill
@@ -3430,23 +3530,27 @@ function saveVendorBill(vendorId, isPartial = false) {
     }
   });
   
-  // Save
-  records[vendorIndex] = vendor;
-  saveRecords(records);
-  
-  // Clear selected phones
-  window.selectedPhonesForBilling = null;
-  
-  alert(`✓ Bill ${billId} created successfully for ${selectedPhoneIds.length} phone(s)!`);
-  const printBtn = document.getElementById('printBillBtn');
-  const exportBtn = document.getElementById('exportPdfBtn');
-  if (printBtn) printBtn.style.display = 'inline-block';
-  if (exportBtn) exportBtn.style.display = 'inline-block';
-  renderRecentBills('');
-  renderRecentVendors('');
-  
-  // Display the new bill
-  displayVendorBillById(vendorId, billId);
+  // Save via API
+  try {
+    await updateVendorRecord(vendor.vendor_id, vendor);
+    
+    // Clear selected phones
+    window.selectedPhonesForBilling = null;
+    
+    alert(`✓ Bill ${billId} created successfully for ${selectedPhoneIds.length} phone(s)!`);
+    const printBtn = document.getElementById('printBillBtn');
+    const exportBtn = document.getElementById('exportPdfBtn');
+    if (printBtn) printBtn.style.display = 'inline-block';
+    if (exportBtn) exportBtn.style.display = 'inline-block';
+    renderRecentBills('');
+    renderRecentVendors('');
+    
+    // Display the new bill
+    displayVendorBillById(vendorId, billId);
+  } catch (error) {
+    console.error('Error saving vendor bill:', error);
+    alert('Error saving bill. Please try again.');
+  }
 }
 
 // Edit vendor bill by bill ID
@@ -3744,4 +3848,10 @@ window.addEventListener('DOMContentLoaded', async () => {
   console.log('✅ APPLICATION READY!');
   console.log('📋 All date fields should now show: 2025-10-28');
   console.log('💾 Database status: Ready =', dbReady);
+});
+
+// Shutdown server when browser/app closes
+window.addEventListener('beforeunload', () => {
+  // Send shutdown signal to server (synchronous to ensure it completes)
+  navigator.sendBeacon(`${API_BASE}/shutdown`);
 });
